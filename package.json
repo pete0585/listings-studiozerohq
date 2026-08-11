@@ -1,5 +1,5 @@
 {
-  "name": "plg-build",
+  "name": "listings-studiozerohq",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.3.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "@anthropic-ai/sdk": "^0.116.0",
+    "@stripe/stripe-js": "^9.13.0",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
+    "next": "15.5.12",
+    "react": "^19",
+    "react-dom": "^19",
+    "stripe": "^17"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -19,7 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.0",
+    "eslint-config-next": "15.5.12",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
