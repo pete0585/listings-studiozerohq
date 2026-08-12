@@ -3,10 +3,6 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServiceClient } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!
-})
-
 const SYSTEM_PROMPT = `You are an expert e-commerce copywriter specializing in optimized product listings. You generate platform-specific listings that maximize visibility and conversions.
 
 CRITICAL PLATFORM RULES — NEVER violate these:
@@ -35,6 +31,16 @@ ALWAYS return valid JSON matching the requested structure exactly. No markdown c
 
 export async function POST(request: NextRequest) {
   try {
+    // Initialize Anthropic client inside the handler so process.env is read at
+    // request time, not at module load / build time. This prevents the SDK from
+    // receiving an undefined apiKey when the env var was added after the build.
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
+      console.error('ANTHROPIC_API_KEY is not set')
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+    const anthropic = new Anthropic({ apiKey })
+
     const body = await request.json()
     const { productName, category, keyFeatures, targetAudience, materials, dimensions, price, keywords, platforms, sessionId } = body
 
