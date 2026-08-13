@@ -90,7 +90,7 @@ export default function PricingPage() {
       <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,10,15,0.9)', position: 'sticky', top: 0, zIndex: 50 }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <Link href="/" className="font-bold text-lg" style={{ background: 'linear-gradient(135deg,#6366f1,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            ListingAI
+            ZeroList
           </Link>
           <Link href="/dashboard" className="text-sm px-4 py-2 rounded-lg"
             style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a78bfa' }}>
@@ -194,7 +194,7 @@ export default function PricingPage() {
             {[
               { q: 'What counts as a listing generation?', a: 'Each time you click "Generate" counts as one credit, regardless of how many platforms you select. Generating for all 4 platforms at once = 1 credit.' },
               { q: 'What happens when I run out of credits?', a: 'You can upgrade your plan or wait for your monthly reset. Credits reset at the start of each billing period.' },
-              { q: 'What model does ListingAI use?', a: 'We use Claude Haiku — Anthropic\'s fast, capable model optimized for structured output. All platform character limits are enforced in the prompt.' },
+              { q: 'What model does ZeroList use?', a: 'We use Claude Haiku — Anthropic\'s fast, capable model optimized for structured output. All platform character limits are enforced in the prompt.' },
               { q: 'Is this in test mode?', a: 'Yes — Stripe is currently in test mode. No real charges will occur. Use card 4242 4242 4242 4242 to test.' },
               { q: 'Can I cancel anytime?', a: 'Yes. Cancel from your dashboard. You keep access until the end of your billing period.' }
             ].map((item, i) => (

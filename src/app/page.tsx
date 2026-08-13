@@ -95,7 +95,7 @@ export default function HomePage() {
       <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,10,15,0.9)', position: 'sticky', top: 0, zIndex: 50 }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <span className="font-bold text-lg" style={{ background: 'linear-gradient(135deg,#6366f1,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            ListingAI
+            ZeroList
           </span>
           <div className="flex gap-4 items-center">
             <Link href="/pricing" className="text-sm" style={{ color: '#aaa' }}>Pricing</Link>
@@ -383,7 +383,7 @@ export default function HomePage() {
       </section>
 
       <footer className="py-8 text-center text-sm" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', color: '#444' }}>
-        <p>© 2026 ListingAI by Studio Zero HQ · <Link href="/pricing" style={{ color: '#555' }}>Pricing</Link> · <Link href="/dashboard" style={{ color: '#555' }}>Dashboard</Link></p>
+        <p>© 2026 ZeroList by Studio Zero HQ · <Link href="/pricing" style={{ color: '#555' }}>Pricing</Link> · <Link href="/dashboard" style={{ color: '#555' }}>Dashboard</Link></p>
       </footer>
     </main>
   )

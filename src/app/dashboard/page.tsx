@@ -112,7 +112,7 @@ export default function DashboardPage() {
         <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,10,15,0.9)', position: 'sticky', top: 0, zIndex: 50 }}>
           <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
             <Link href="/" className="font-bold text-lg" style={{ background: 'linear-gradient(135deg,#6366f1,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              ListingAI
+              ZeroList
             </Link>
             <Link href="/pricing" style={{ color: '#aaa', fontSize: 14 }}>Pricing</Link>
           </div>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
       <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', background: 'rgba(10,10,15,0.9)', position: 'sticky', top: 0, zIndex: 50 }}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
           <Link href="/" className="font-bold text-lg" style={{ background: 'linear-gradient(135deg,#6366f1,#a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            ListingAI
+            ZeroList
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm" style={{ color: '#888' }}>{user.email}</span>
