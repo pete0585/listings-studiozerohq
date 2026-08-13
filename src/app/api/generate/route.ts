@@ -29,11 +29,11 @@ EBAY:
 
 ALWAYS return valid JSON matching the requested structure exactly. No markdown code blocks in the JSON response.`
 
+// Per-IP rate limit for anonymous users: max 3 requests per 24h per IP
+const IP_DAILY_LIMIT = 3
+
 export async function POST(request: NextRequest) {
   try {
-    // Initialize Anthropic client inside the handler so process.env is read at
-    // request time, not at module load / build time. This prevents the SDK from
-    // receiving an undefined apiKey when the env var was added after the build.
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
       console.error('ANTHROPIC_API_KEY is not set')
@@ -60,19 +60,52 @@ export async function POST(request: NextRequest) {
       userId = user?.id || null
     }
 
-    // For anonymous users, check session limit (1 free per session)
-    if (!userId && sessionId) {
-      const { count } = await supabase
+    // Anonymous user gating
+    if (!userId) {
+      // SECURITY: Require sessionId — without it we cannot enforce the per-session limit.
+      // Omitting sessionId was a bypass that allowed unlimited free Claude calls.
+      if (!sessionId) {
+        return NextResponse.json({
+          error: 'session_required',
+          message: 'Session ID is required for free generations.'
+        }, { status: 400 })
+      }
+
+      // Per-session limit: 1 free generation per browser session
+      const { count: sessionCount } = await supabase
         .from('listing_generations')
         .select('*', { count: 'exact', head: true })
         .eq('session_id', sessionId)
         .is('user_id', null)
 
-      if ((count || 0) >= 1) {
+      if ((sessionCount || 0) >= 1) {
         return NextResponse.json({
           error: 'free_limit_reached',
           message: 'Sign up for free to save listings and generate more.'
         }, { status: 402 })
+      }
+
+      // Per-IP rate limit: max 3 anonymous generations per IP per 24h
+      // This prevents session ID farming (generating a new ID for each request)
+      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                       request.headers.get('x-real-ip') ||
+                       'unknown'
+
+      if (clientIp !== 'unknown') {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+        const { count: ipCount } = await supabase
+          .from('listing_generations')
+          .select('*', { count: 'exact', head: true })
+          .eq('ip_address', clientIp)
+          .is('user_id', null)
+          .gte('created_at', since)
+
+        if ((ipCount || 0) >= IP_DAILY_LIMIT) {
+          return NextResponse.json({
+            error: 'free_limit_reached',
+            message: 'Daily free limit reached. Sign up for a paid plan to continue.'
+          }, { status: 429 })
+        }
       }
     }
 
@@ -146,21 +179,23 @@ JSON format:
       throw new Error('Unexpected response type from Claude')
     }
 
-    // Parse the JSON response
     let outputData: Record<string, unknown>
     try {
-      // Strip any markdown code blocks if present
       const cleaned = content.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
       outputData = JSON.parse(cleaned)
     } catch {
       throw new Error('Failed to parse listing output as JSON')
     }
 
-    // Save to database
+    // Save to database — include ip_address for IP-based rate limiting
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                     request.headers.get('x-real-ip') ||
+                     null
     const inputData = { productName, category, keyFeatures, targetAudience, materials, dimensions, price, keywords }
     const record = {
       user_id: userId,
       session_id: sessionId || null,
+      ip_address: userId ? null : clientIp, // only store IP for anonymous users
       product_name: productName,
       input_data: inputData,
       platforms,
@@ -177,7 +212,6 @@ JSON format:
       console.error('Failed to save generation:', saveError)
     }
 
-    // Increment credits for subscribed users
     if (userId) {
       await supabase.rpc('increment_credits', { p_user_id: userId })
     }
