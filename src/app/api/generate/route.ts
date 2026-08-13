@@ -31,9 +31,6 @@ ALWAYS return valid JSON matching the requested structure exactly. No markdown c
 
 export async function POST(request: NextRequest) {
   try {
-    // Initialize Anthropic client inside the handler so process.env is read at
-    // request time, not at module load / build time. This prevents the SDK from
-    // receiving an undefined apiKey when the env var was added after the build.
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
       console.error('ANTHROPIC_API_KEY is not set')
@@ -60,8 +57,19 @@ export async function POST(request: NextRequest) {
       userId = user?.id || null
     }
 
-    // For anonymous users, check session limit (1 free per session)
-    if (!userId && sessionId) {
+    // Anonymous user gating
+    if (!userId) {
+      // SECURITY FIX: Require sessionId for all anonymous requests.
+      // Previously, omitting sessionId caused `if (!userId && sessionId)` to short-circuit
+      // to false, skipping the Supabase count query entirely — allowing unlimited free Claude calls.
+      if (!sessionId) {
+        return NextResponse.json({
+          error: 'session_required',
+          message: 'A session ID is required. Please use the web interface.'
+        }, { status: 400 })
+      }
+
+      // Per-session limit: 1 free generation per browser session
       const { count } = await supabase
         .from('listing_generations')
         .select('*', { count: 'exact', head: true })
@@ -146,17 +154,14 @@ JSON format:
       throw new Error('Unexpected response type from Claude')
     }
 
-    // Parse the JSON response
     let outputData: Record<string, unknown>
     try {
-      // Strip any markdown code blocks if present
       const cleaned = content.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
       outputData = JSON.parse(cleaned)
     } catch {
       throw new Error('Failed to parse listing output as JSON')
     }
 
-    // Save to database
     const inputData = { productName, category, keyFeatures, targetAudience, materials, dimensions, price, keywords }
     const record = {
       user_id: userId,
@@ -177,7 +182,6 @@ JSON format:
       console.error('Failed to save generation:', saveError)
     }
 
-    // Increment credits for subscribed users
     if (userId) {
       await supabase.rpc('increment_credits', { p_user_id: userId })
     }
